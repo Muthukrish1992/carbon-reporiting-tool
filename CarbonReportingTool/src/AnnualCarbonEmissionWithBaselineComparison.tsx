@@ -332,16 +332,7 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
             data: scope2Data,
             type: "column",
             color: "#ff7f0e",
-          },
-          {
-            name: `Baseline (${baselineYear})`,
-            data: baselineSeries,
-            type: "line",
-            color: "red",
-            dashStyle: "Dash",
-            marker: { enabled: false },
-            enableMouseTracking: false,
-          },
+          }
         ],
         tooltip: {
           shared: true,
