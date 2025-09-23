@@ -291,7 +291,7 @@ const ESGAreaChart: React.FunctionComponent<IWidgetProps> = (props) => {
           
         },
         title: {
-          text: 'Carbon Emissions (Area Chart)',
+          text: `Carbon Emissions (Area Chart) from from ${fromYear} to ${toYear}`,
           style: {
             fontSize: '20px',
             fontWeight: 'bold',

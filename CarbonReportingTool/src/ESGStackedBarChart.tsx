@@ -236,12 +236,26 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
       // Get sorted months
       const months = Object.keys(monthlyEmissions).sort((a, b) => monthOrder[a] - monthOrder[b]);
   
-      // Monthly total (Scope1 + Scope2) across all activities
-      const totalSeriesData = months.map(month => {
-        const monthData = monthlyEmissions[month] || {};
-        const sum = Object.values(monthData).reduce((acc, val) => acc + val, 0);
-        return sum;
-      });
+      // // Monthly total (Scope1 + Scope2) across all activities
+      // const totalSeriesData = months.map(month => {
+      //   const monthData = monthlyEmissions[month] || {};
+      //   const sum = Object.values(monthData).reduce((acc, val) => acc + val, 0);
+      //   return sum;
+      // });
+      // For each month, calculate totals
+        const totalScope1Series = months.map(month => {
+          const monthData = monthlyEmissions[month] || {};
+          return Object.keys(monthData)
+            .filter(a => a.includes("Generator") || a.includes("Refrigerant")) // scope 1
+            .reduce((sum, act) => sum + (monthData[act] || 0), 0);
+        });
+
+        const totalScope2Series = months.map(month => {
+          const monthData = monthlyEmissions[month] || {};
+          return Object.keys(monthData)
+            .filter(a => a.includes("Electricity")) // scope 2
+            .reduce((sum, act) => sum + (monthData[act] || 0), 0);
+        });
       // Get all activities
       const activities = Array.from(new Set(
         Object.values(monthlyEmissions).flatMap(monthData => Object.keys(monthData))
@@ -270,16 +284,25 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
         };
       });
       
+      // Add Total as 2 stacked series with different green shades
       series.push({
-        name: "Total (Scope 1 + Scope 2)",
-        data: totalSeriesData,
+        name: "Total (Scope 1 part)",
+        data: totalScope1Series,
         type: "column",
-        stack: "Total",   // separate stack → grouped beside scope bars
-        color: "#2ecc71",
+        stack: "Total",
+        color: "#27ae60",   // darker green shade
         borderWidth: 0,
-        borderRadius: 2
+        borderRadius: 0
       });
-
+      series.push({
+        name: "Total (Scope 2 part)",
+        data: totalScope2Series,
+        type: "column",
+        stack: "Total",
+        color: "#2ecc71",   // lighter green shade
+        borderWidth: 0,
+        borderRadius: 0
+      });
 
       // Highcharts configuration for stacked bar chart
       const chartConfig: Highcharts.Options = {
@@ -290,7 +313,7 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
           spacing: [20, 20, 20, 20]
         },
         title: {
-          text: 'Carbon Emissions (Stacked)',
+          text: `Carbon Emissions (Stacked) (${yearFilter})`,
           style: {
             fontSize: '20px',
             fontWeight: 'bold',

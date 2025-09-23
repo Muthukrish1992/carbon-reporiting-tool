@@ -205,7 +205,7 @@ const AllData: React.FunctionComponent<IWidgetProps> = (props) => {
         backgroundColor: 'transparent'
       },
       title: {
-        text: 'Activity Data (Line Chart)',
+        text: `Activity Data (Line Chart) ${yearFilter}`,
         style: { fontSize: '18px', fontWeight: 'bold' , color: '#333'}
       },
 

@@ -320,18 +320,19 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
             },
           },
         },
+
         series: [
           {
             name: "Scope 1",
             data: scope1Data,
             type: "column",
-            color: "#1f77b4",
+            color: "#FF6B6B",
           },
           {
             name: "Scope 2",
             data: scope2Data,
             type: "column",
-            color: "#ff7f0e",
+            color: "#4ECDC4",
           }
         ],
         tooltip: {
@@ -423,7 +424,7 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
               options={availableBaselineYears.map((y) => ({ label: y.toString(), value: y }))}
               selected={baselineYear}
               onChange={(val) => setBaselineYear(val)}
-              placeholder="Select baseline year"
+              placeholder="Select baseline"
             />
           </FormField>
         </FilterPanel>

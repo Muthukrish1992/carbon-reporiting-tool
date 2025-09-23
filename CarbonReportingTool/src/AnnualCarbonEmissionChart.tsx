@@ -186,7 +186,7 @@ const AnnualCarbonEmissionChart: React.FunctionComponent<IWidgetProps> = (props)
           spacing: [20, 20, 20, 20]
         },
         title: {
-          text: 'Annual Carbon Emissions by Scope',
+          text: `Annual Carbon Emissions by Scope (${yearFilter})`,
           style: {
             fontSize: '22px',
             fontWeight: 'bold',
