@@ -232,9 +232,16 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
 
   useEffect(() => {
     if (chartRef.current && Object.keys(monthlyEmissions).length > 0) {
+      
       // Get sorted months
       const months = Object.keys(monthlyEmissions).sort((a, b) => monthOrder[a] - monthOrder[b]);
-      
+  
+      // Monthly total (Scope1 + Scope2) across all activities
+      const totalSeriesData = months.map(month => {
+        const monthData = monthlyEmissions[month] || {};
+        const sum = Object.values(monthData).reduce((acc, val) => acc + val, 0);
+        return sum;
+      });
       // Get all activities
       const activities = Array.from(new Set(
         Object.values(monthlyEmissions).flatMap(monthData => Object.keys(monthData))
@@ -262,6 +269,17 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
           borderRadius: 2
         };
       });
+      
+      series.push({
+        name: "Total (Scope 1 + Scope 2)",
+        data: totalSeriesData,
+        type: "column",
+        stack: "Total",   // separate stack → grouped beside scope bars
+        color: "#2ecc71",
+        borderWidth: 0,
+        borderRadius: 2
+      });
+
 
       // Highcharts configuration for stacked bar chart
       const chartConfig: Highcharts.Options = {
@@ -325,7 +343,12 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
         },
         tooltip: {
           headerFormat: '<b>{point.key}</b><br/>',
-          pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y:.1f} kgCO₂e</b> ({series.options.stack})<br/>',
+          pointFormatter: function() {
+            if (this.series.name.includes("Total")) {
+              return `<span style="color:${this.color}">${this.series.name}</span>: <b>${this.y?.toFixed(1)} kgCO₂e</b><br/>`;
+            }
+            return `<span style="color:${this.color}">${this.series.name}</span>: <b>${this.y?.toFixed(1)} kgCO₂e</b> (${this.series.options.stack})<br/>`;
+          },
           footerFormat: 'Total: <b>{point.total:.1f} kgCO₂e</b>',
           shared: false,
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -333,6 +356,8 @@ const ESGStackedBarChart: React.FunctionComponent<IWidgetProps> = (props) => {
           borderRadius: 8,
           shadow: true
         },
+
+
         legend: {
           enabled: false // Disable the default legend
         },

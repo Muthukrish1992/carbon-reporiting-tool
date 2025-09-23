@@ -218,11 +218,11 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
       return 4000; // fallback if no matching baseline found
     }
 
-    // If the baseline data already contains calculated emissions (tCO2e), use it directly
+    // If the baseline data already contains calculated emissions (kgCO2e), use it directly
     // Otherwise, apply emission factors
     let totalBaseline = 0;
     filteredBaselines.forEach((item: any) => {
-      // Check if the value is already in tCO2e (likely if it's a large number like 1293)
+      // Check if the value is already in kgCO2e (likely if it's a large number like 1293)
       // or if it needs to be multiplied by emission factor
       const rawValue = parseFloat(item.value || 0);
       
@@ -282,7 +282,7 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
         },
         yAxis: {
           min: 0,
-          title: { text: "Emissions (tCO₂e)" },
+          title: { text: "Carbon Emissions (kgCO₂e)" },
           plotLines:
             baselineValue > 0
               ? [
@@ -293,7 +293,7 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
                     value: baselineValue,
                     zIndex: 10, // Higher z-index to ensure it's on top
                     label: {
-                      text: `Baseline ${baselineYear}: ${Math.round(baselineValue).toLocaleString()} tCO₂e`,
+                      text: `Baseline ${baselineYear}: ${Math.round(baselineValue).toLocaleString()} kgCO₂e`,
                       align: "right",
                       verticalAlign: "bottom",
                       style: { 
@@ -336,7 +336,7 @@ const AnnualCarbonEmissionWithBaselineComparison: React.FunctionComponent<
         ],
         tooltip: {
           shared: true,
-          footerFormat: "Total: <b>{point.total}</b> tCO₂e",
+          footerFormat: "Total: <b>{point.total}</b> kgCO₂e",
         },
         legend: { enabled: true },
         credits: { enabled: false },

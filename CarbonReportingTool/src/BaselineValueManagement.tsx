@@ -31,12 +31,8 @@ const BaselineValueManagement: React.FunctionComponent<IWidgetProps> = (props) =
   const [existingBaselines, setExistingBaselines] = useState<BaselineValue[]>([]);
   
   // Form state
-  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
   const [value, setValue] = useState<string>("");
-
-  // Modal state
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [existingBaseline, setExistingBaseline] = useState<BaselineValue | null>(null);
 
   // 🔹 Fetch existing baseline values
   const fetchExistingBaselines = async () => {
@@ -62,7 +58,7 @@ const BaselineValueManagement: React.FunctionComponent<IWidgetProps> = (props) =
   }, []);
 
   // 🔹 Check if baseline exists (exact year match)
-  const checkExistingBaseline = (yearToCheck: number): BaselineValue | null => {
+  const checkExistingBaseline = (yearToCheck: string): BaselineValue | null => {
     return (
       existingBaselines.find(
         (baseline) => Number(baseline.year) === Number(yearToCheck)
@@ -71,15 +67,16 @@ const BaselineValueManagement: React.FunctionComponent<IWidgetProps> = (props) =
   };
 
   // 🔹 Validate form
-  const validateForm = (): string | null => {
-    if (!year || year < 1900 || year > 2100) {
-      return "Please enter a valid year.";
-    }
-    if (!value.trim() || isNaN(Number(value)) || Number(value) < 0) {
-      return "Please enter a valid positive number for the baseline value.";
-    }
-    return null;
-  };
+// Validation (only ensure year is not empty)
+const validateForm = (): string | null => {
+  if (!year.trim()) {
+    return "Please enter a valid year or name.";
+  }
+  if (!value.trim() || isNaN(Number(value)) || Number(value) < 0) {
+    return "Please enter a valid positive number for the baseline value.";
+  }
+  return null;
+};
 
   // 🔹 Handle form submission
 const handleSubmit = async () => {
@@ -93,21 +90,26 @@ const handleSubmit = async () => {
   console.log("Submitting", { year, value, existing });
 
   if (existing) {
-    // Existing baseline found → confirm with user
-    setExistingBaseline(existing);
-    setShowConfirmModal(true);
+    const confirmUpdate = window.confirm(
+      `A baseline value already exists for year ${year}. Do you want to override it?`
+    );
+    if (confirmUpdate) {
+      await saveBaseline();
+    } else {
+      toast.info("Update cancelled. No changes were made.");
+    }
   } else {
-    // No existing → safe to insert
     await saveBaseline();
   }
 };
+
 
   // 🔹 Save baseline value
 const saveBaseline = async () => {
   setSaving(true);
   try {
     const baselineData = {
-      year,
+      year:year.trim(),
       value: Number(value),
     };
 
@@ -118,13 +120,11 @@ const saveBaseline = async () => {
       "InsertBaselineValue",
       baselineData,
       { json: true }
-    );
-
+    );  
     toast.success("Baseline value saved successfully!");
-
     resetForm();
     await fetchExistingBaselines();
-    closeConfirmModal();
+
   } catch (error) {
     console.error("Error saving baseline:", error);
     toast.error("Failed to save baseline value. Please try again.");
@@ -135,26 +135,10 @@ const saveBaseline = async () => {
 
   // 🔹 Reset form to initial state
   const resetForm = () => {
-    setYear(new Date().getFullYear());
+    setYear(new Date().getFullYear().toString());
     setValue("");
   };
 
-  // 🔹 Close confirmation modal
-  const closeConfirmModal = () => {
-    setShowConfirmModal(false);
-    setExistingBaseline(null);
-  };
-
-  // 🔹 Handle confirmation to update existing baseline
-  const handleConfirmUpdate = async () => {
-    await saveBaseline();
-  };
-
-  // 🔹 Handle cancellation of update
-  const handleCancelUpdate = () => {
-    closeConfirmModal();
-    toast.info("Update cancelled. No changes were made.");
-  };
 
   return (
     <WidgetWrapper>
@@ -169,20 +153,20 @@ const saveBaseline = async () => {
               <h3>Add/Update Baseline Value</h3>
 
               <FormField>
-                <Label>Year *</Label>
+                <Label>Year / Name *</Label>
                 <div className="year-input-container">
                   <Input
-                    type="number"
-                    value={year.toString()}
-                    onChange={(val) => setYear(val ? parseInt(val) : new Date().getFullYear())}
-                    placeholder="Enter year"
+                    type="text"
+                    value={year}
+                    onChange={(val) => setYear(val)}
+                    placeholder="Enter year or name"
                     className="year-input"
                   />
                 </div>
               </FormField>
 
               <FormField>
-                <Label>Baseline Value (tCO₂e) *</Label>
+                <Label>Baseline Value (kgCO₂e) *</Label>
                 <Input
                   type="text"
                   value={value}
@@ -219,7 +203,7 @@ const saveBaseline = async () => {
                     <thead>
                       <tr>
                         <th>Year</th>
-                        <th>Value (tCO₂e)</th>
+                        <th>Value (kgCO₂e)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -237,60 +221,6 @@ const saveBaseline = async () => {
           </div>
         )}
 
-        {/* Confirmation Modal for Existing Baseline */}
-        {showConfirmModal && existingBaseline && (
-          <Modal
-            show={showConfirmModal}
-            onClose={handleCancelUpdate}
-            title="⚠️ Baseline Value Already Exists"
-          >
-            <div className="modal-body">
-              <p>
-                A baseline value already exists for <strong>{year}</strong>:
-              </p>
-              
-              <div className="baseline-comparison">
-                <div className="existing-value">
-                  <span className="label">Current Value:</span>
-                  <span className="value">{existingBaseline.value.toLocaleString()} tCO₂e</span>
-                </div>
-                <div className="new-value">
-                  <span className="label">New Value:</span>
-                  <span className="value">{Number(value).toLocaleString()} tCO₂e</span>
-                </div>
-              </div>
-              
-              <p className="confirmation-message">
-                <strong>Do you want to update the existing baseline value?</strong>
-              </p>
-              
-              <div className="warning-note">
-                <small>⚠️ This action will replace the current baseline value permanently.</small>
-              </div>
-            </div>
-            
-            <div className="modal-footer">
-              <Button
-                title="Yes, Update Baseline"
-                onClick={handleConfirmUpdate}
-                loading={saving}
-                disabled={saving}
-                className="btn-primary"
-              >
-                {saving ? "Updating..." : "Yes, Update"}
-              </Button>
-              
-              <Button
-                title="Cancel"
-                onClick={handleCancelUpdate}
-                disabled={saving}
-                className="btn-secondary"
-              >
-                Cancel
-              </Button>
-            </div>
-          </Modal>
-        )}
       </div>
     </WidgetWrapper>
   );
