@@ -288,7 +288,9 @@ const ESGDonutChart: React.FunctionComponent<IWidgetProps> = (props) => {
           spacing: [20, 20, 20, 20]
         },
         title: {
-          text: `Carbon Emissions by Scope from ${fromYear} to ${toYear}`,
+          text: fromYear === toYear 
+            ? `Carbon Emissions by Scope for ${fromYear}`
+            : `Carbon Emissions by Scope from ${fromYear} to ${toYear}`,
           style: {
             fontSize: '20px',
             fontWeight: 'bold',

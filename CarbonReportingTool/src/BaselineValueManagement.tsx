@@ -196,9 +196,9 @@ const saveBaseline = async () => {
 
             {/* Existing Baselines Table */}
             {existingBaselines.length > 0 && (
-              <div className="existing-baselines">
+              <div className="existing-baselines" style={{ padding: '20px', marginTop: '20px' }}>
                 <h3>Existing Baseline Values</h3>
-                <div className="baseline-table">
+                <div className="baseline-table" style={{ paddingLeft: '8px'}}>
                   <table>
                     <thead>
                       <tr>
